@@ -73,7 +73,8 @@ namespace GuestService.Data
                     {
                         id = row.ReadInt("expartner$inc"),
                         name = row.ReadNullableTrimmedString("expartner$name")
-                    }
+                    },
+                    text = row.ReadNullableTrimmedString("excurs$route")
                 };
                 System.DateTime? durationDate = row.ReadNullableUnspecifiedDateTime("excurs$lasting");
                 if (durationDate.HasValue)

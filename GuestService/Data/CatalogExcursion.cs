@@ -48,6 +48,9 @@
 
         [XmlAttribute]
         public string url { get; set; }
+
+        [XmlAttribute]
+        public string text  {get; set; }
     }
 }
 
