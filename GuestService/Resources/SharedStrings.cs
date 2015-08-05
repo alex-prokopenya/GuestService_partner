@@ -8,6 +8,10 @@
     using System.Resources;
     using System.Runtime.CompilerServices;
 
+    using Sm.System.Mvc.Language;
+    using System.Collections.Generic;
+    using System.Collections;
+
     [CompilerGenerated, GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0"), DebuggerNonUserCode]
     public class SharedStrings
     {
@@ -16,6 +20,34 @@
 
         internal SharedStrings()
         {
+        }
+
+        private static Dictionary<string, Dictionary<string, string>> strings = new Dictionary<string, Dictionary<string, string>>();
+
+        public static string Get(string key)
+        {
+            var str = UrlLanguage.CurrentLanguage;
+
+            if (strings.Count == 0)
+            {
+                strings[str] = new Dictionary<string, string>();
+
+                //загрузить строки из xml
+                string fileName = System.IO.Path.Combine(GuestService.Notifications.TemplateParser.GetAssemblyDirectory(), "Resources", "SharedStrings." + str + ".resx");
+
+                if (System.IO.File.Exists(fileName))
+                {
+                    ResXResourceReader rr = new ResXResourceReader(fileName);
+
+                    foreach (DictionaryEntry d in rr)
+                        strings[str].Add(d.Key.ToString(), d.Value.ToString());
+                }
+            }
+
+            if (strings[str].ContainsKey(key))
+                return strings[str][key];
+
+            return SharedStrings.ResourceManager.GetString(key, SharedStrings.resourceCulture);
         }
 
         [EditorBrowsable(EditorBrowsableState.Advanced)]
