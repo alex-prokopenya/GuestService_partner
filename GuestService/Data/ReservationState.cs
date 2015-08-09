@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 namespace GuestService.Data
 {
     public class ReservationState
@@ -11,6 +12,11 @@ namespace GuestService.Data
             set;
         }
         public ReservationStatus status
+        {
+            get;
+            set;
+        }
+        public ReservationCustomer customer
         {
             get;
             set;

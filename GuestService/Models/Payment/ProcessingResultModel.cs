@@ -12,6 +12,25 @@
         public bool? success { get; set; }
 
         public string token { get; set; }
+
+        
+        public string order
+        {
+            get;
+            set;
+        }
+
+        public string result
+        {
+            get;
+            set;
+        }
+
+        public string payrefno
+        {
+            get;
+            set;
+        }
     }
 }
 

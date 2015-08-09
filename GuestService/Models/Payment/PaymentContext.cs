@@ -7,6 +7,18 @@
 
     public class PaymentContext
     {
+        public bool Success
+        {
+            get;
+            set;
+        }
+
+        public string Order
+        {
+            get;
+            set;
+        }
+
         public List<PaymentMode> PaymentModes { get; set; }
 
         public ReservationState Reservation { get; set; }

@@ -14,6 +14,12 @@
         public List<string> Errors { get; private set; }
 
         public bool Success { get; set; }
+
+        public string Order
+        {
+            get;
+            set;
+        }
     }
 }
 

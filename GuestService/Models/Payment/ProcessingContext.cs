@@ -11,6 +11,8 @@
         public GuestService.Data.PaymentMode PaymentMode { get; set; }
 
         public ReservationState Reservation { get; set; }
+
+        public string RedirectUrl { get; set; }
     }
 }
 

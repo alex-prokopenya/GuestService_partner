@@ -7,6 +7,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Xml.Linq;
+using System.Threading.Tasks;
+using Sm.System.Mvc.Language;
+using GuestService.Notifications;
+
 namespace GuestService.Data
 {
     public static class BookingProvider
@@ -737,5 +741,42 @@ namespace GuestService.Data
                 from DataRow row in ds.Tables["result"].Rows
                 select BookingProvider.factory.ExternalCartAddOrderResult(row)).FirstOrDefault<ExternalCartAddOrderResult>();
         }
+
+        public static void AcceptInvoice(int claimId)
+        {
+            using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["db"].ConnectionString))
+            {
+                using (SqlCommand command = connection.CreateCommand())
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "income.dbo.up_RegPaymentsFromBankInvoices";
+
+                    using (OperationDurationLimit.ShortOperation(command))
+                    {
+                        connection.Open();
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+
+                        }
+                    }
+                }
+            }
+
+            //отправка сообщений
+            {
+                var reservation = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, claimId);
+
+
+                Task[] tasks = new Task[]
+                                {
+                                    Task.Factory.StartNew(() => new SimpleEmailService().SendEmail<ReservationState>(reservation.customer.mail, "payment", reservation.customer.language, reservation)),
+                                    Task.Factory.StartNew(() => new SmsSender().SendMessage<ReservationState>(reservation.customer.phone, "payment", reservation.customer.language, reservation))
+                                };
+
+                Task.WaitAll(tasks);
+            }
+        }
+
+      
     }
 }

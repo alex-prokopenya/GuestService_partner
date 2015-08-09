@@ -87,31 +87,24 @@
                 throw new System.Exception(string.Format("payment mode id '{0}' not found", model.paymentId));
             }
             string text = (paymentMode.processing ?? "").ToLowerInvariant();
+
             if (text != null)
             {
-                ActionResult result;
-                if (!(text == "paypal"))
+                switch (text)
                 {
-                    if (!(text == "uniteller"))
-                    {
-                        if (!(text == "bank"))
-                        {
-                            goto IL_120;
-                        }
-                        result = this.Processing_Bank(model.claimId, paymentMode);
-                    }
-                    else
-                    {
-                        result = this.Processing_Uniteller(model.claimId, paymentMode);
-                    }
+                    case "paypal":
+                        return this.Processing_PayPal(model.claimId, paymentMode);
+
+                    case "uniteller":
+                        return this.Processing_Uniteller(model.claimId, paymentMode);
+
+                    case "payu":
+                        return this.Processing_PayU(model.claimId, paymentMode);
+
+                    default:
+                        break;
                 }
-                else
-                {
-                    result = this.Processing_PayPal(model.claimId, paymentMode);
-                }
-                return result;
             }
-            IL_120:
             throw new System.Exception(string.Format("unsupported processing system '{0}'", paymentMode.processing));
         }
 
@@ -251,13 +244,25 @@
         [ActionName("processingresult"), HttpGet]
         public ActionResult ProcessingResult(string id, ProcessingResultModel model)
         {
-            switch ((id ?? "").ToLowerInvariant())
-            {
-                case "paypal":
-                    return this.ProcessingResult_PayPal(model);
+            string text = (id ?? "").ToLowerInvariant();
 
-                case "uniteller":
-                    return this.ProcessingResult_Uniteller(model);
+            if (text != null)
+            {
+                switch (text)
+                {
+                    case "paypal":
+                        return this.ProcessingResult_PayPal(model);
+
+                    case "uniteller":
+                        return this.ProcessingResult_Uniteller(model);
+
+                    case "payu":
+                        model.success = model.result == "1";
+                        return this.ProcessingResult_PayU(model);
+
+                    default:
+                        break;
+                }
             }
             throw new Exception(string.Format("unsupported processing system '{0}'", id));
         }
@@ -361,6 +366,8 @@
                         else
                         {
                             context.Success = true;
+
+                            BookingProvider.AcceptInvoice(Convert.ToInt32(context.Order));
                         }
                     }
                 }
@@ -382,6 +389,65 @@
             if (model.success == true)
             {
                 context.Success = true;
+            }
+            else
+            {
+                context.Errors.Add(PaymentStrings.PaymentCancelled);
+            }
+            return base.View("_ProcessingResult", context);
+        }
+
+        private ActionResult Processing_PayU(int claim, PaymentMode payment)
+        {
+            if (payment == null)
+            {
+                throw new System.ArgumentNullException("payment");
+            }
+            PaymentBeforeProcessingResult beforePaymentResult = BookingProvider.BeforePaymentProcessing(UrlLanguage.CurrentLanguage, payment.paymentparam);
+            if (beforePaymentResult == null)
+            {
+                throw new System.Exception("cannot get payment details");
+            }
+            if (!beforePaymentResult.success)
+            {
+                throw new System.Exception("payment details fail");
+            }
+            return base.View("PaymentSystems\\PayU", new ProcessingContext
+            {
+                Reservation = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, claim),
+                PaymentMode = payment,
+                BeforePaymentResult = beforePaymentResult
+            });
+        }
+
+        private ActionResult ProcessingResult_PayU(ProcessingResultModel model)
+        {
+            if (model == null)
+            {
+                throw new System.ArgumentNullException("model");
+            }
+            PaymentResultContext context = new PaymentResultContext();
+            if (model.success == true)
+            {
+                context.Success = true;
+                context.Order = model.order;
+                ConfirmInvoiceResult invoiceResult = BookingProvider.ConfirmInvoice(model.invoice);
+
+                Tracing.DataTrace.TraceEvent(TraceEventType.Information, 0, "PAYU transaction: invoice: '{0}', invoice confirmation: '{1}'", new object[]
+                {
+                    model.invoice,
+                    invoiceResult.IsSuccess ? "SUCCESS" : "FAILED"
+                });
+
+                if (!invoiceResult.IsSuccess)
+                {
+                    context.Errors.Add(string.Format("invoice confirmation error: {0}", invoiceResult.ErrorMessage));
+                }
+                else
+                {
+                    context.Success = true;
+                    BookingProvider.AcceptInvoice(Convert.ToInt32(context.Order));
+                }
             }
             else
             {
