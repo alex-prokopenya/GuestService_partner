@@ -157,6 +157,8 @@
                 }
             }
             context.Form.Action = "calculate";
+            context.PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, 2025654180);
+
             return this.Index(context.Form);
         }
 
@@ -194,6 +196,7 @@
                 }
             }
             BookingContext model = new BookingContext();
+            model.PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, 2025654180);
             BookingClaim bookingClaim = new BookingClaim {
                 orders = new List<BookingOrder>()
             };
@@ -260,6 +263,7 @@
                             CompleteOperationProvider.SetResult(operation.OperationId, null, null);
                         }
                     }, null);
+                   
                     return base.View("_BookingProcessing", model);
                 }
             }

@@ -3,6 +3,7 @@
     using GuestService.Data;
     using System;
     using System.Linq;
+    using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
     public class BookingContext
@@ -52,6 +53,8 @@
                 arg_17A_1 = false;
             }
             this.IsBookingEnabled = arg_17A_1;
+
+            
         }
 
         public string BookingOperationId { get; set; }
@@ -61,6 +64,8 @@
         public bool IsBookingEnabled { get; set; }
 
         public ReservationState Reservation { get; set; }
+
+        public List<PaymentMode> PaymentModes { get; set; }
     }
 }
 

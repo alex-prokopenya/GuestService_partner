@@ -28,7 +28,7 @@
         {
             var str = UrlLanguage.CurrentLanguage;
 
-            if (strings.Count == 0)
+            if (!strings.ContainsKey(str))
             {
                 strings[str] = new Dictionary<string, string>();
 
