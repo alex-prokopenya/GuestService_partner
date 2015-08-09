@@ -14,19 +14,19 @@
             CultureInfo culture = CultureInfo.CreateSpecificCulture(language);
             if (this.average >= 9.5M)
             {
-                this.title = RankingTitleStrings.ResourceManager.GetString("Rank_1", culture);
+                this.title = RankingTitleStrings.Get("Rank_1");
             }
             else if (this.average >= 9.0M)
             {
-                this.title = RankingTitleStrings.ResourceManager.GetString("Rank_2", culture);
+                this.title = RankingTitleStrings.Get("Rank_2");
             }
             else if (this.average >= 8.0M)
             {
-                this.title = RankingTitleStrings.ResourceManager.GetString("Rank_3", culture);
+                this.title = RankingTitleStrings.Get("Rank_3");
             }
             else if (this.average >= 7.0M)
             {
-                this.title = RankingTitleStrings.ResourceManager.GetString("Rank_4", culture);
+                this.title = RankingTitleStrings.Get("Rank_4");
             }
             else
             {
