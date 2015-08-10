@@ -215,7 +215,18 @@
             SetExpressCheckoutResponseType setECResponse = service.SetExpressCheckout(wrapper);
             System.Collections.Generic.KeyValuePair<string, string> sandboxConfig = config.FirstOrDefault((System.Collections.Generic.KeyValuePair<string, string> m) => m.Key == "mode");
             string sandboxServer = (sandboxConfig.Key != null && sandboxConfig.Value == "sandbox") ? ".sandbox" : "";
-            return new RedirectResult(string.Format("https://www{0}.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token={1}", sandboxServer, base.Server.UrlEncode(setECResponse.Token)));
+
+            return base.View("PaymentSystems\\PayPal", new ProcessingContext
+            {
+                Reservation = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, claim),
+                PaymentMode = payment,
+                BeforePaymentResult = beforePaymentResult,
+                RedirectUrl = string.Format("https://www{0}.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token={1}", sandboxServer, base.Server.UrlEncode(setECResponse.Token))
+            });
+
+          //  return new RedirectResult(string.Format("https://www{0}.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token={1}", sandboxServer, base.Server.UrlEncode(setECResponse.Token)));
+
+
         }
 
         private ActionResult Processing_Uniteller(int claim, PaymentMode payment)
@@ -274,6 +285,7 @@
                 throw new System.ArgumentNullException("model");
             }
             PaymentResultContext context = new PaymentResultContext();
+            context.Order = model.order;
             if (model.success == true)
             {
                 if (model.token == null)
