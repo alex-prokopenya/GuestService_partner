@@ -54,6 +54,26 @@
                         if (reservation.HasValue)
                         {
                             base.TempData[string.Format("order.{0}.name", reservation.Value)] = ((bookingResult.Form != null) ? bookingResult.Form.CustomerName : "");
+
+                            try
+                            {
+                                //разрешаем пользователю смотреть путевку в экране оплат
+                                if (System.Web.HttpContext.Current.Session["allowed_claims"] == null)
+                                    System.Web.HttpContext.Current.Session["allowed_claims"] = new List<int>();
+
+                                //  System.Web.HttpContext.Current
+                                var list = (System.Web.HttpContext.Current.Session["allowed_claims"] as List<int>);
+
+                                list.Add(bookingResult.Reservation.claimId.Value);
+
+                                System.Web.HttpContext.Current.Session["allowed_claims"] = list;
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+
                             operation.Clear();
                             using (ShoppingCart cart = ShoppingCart.CreateFromSession(base.Session))
                             {

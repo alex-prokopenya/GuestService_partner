@@ -16,6 +16,35 @@
     [UrlLanguage, HttpPreferences, WebSecurityInitializer]
     public class ExcursionController : BaseController
     {
+        [AllowAnonymous, HttpGet, ActionName("logout")]
+        public ActionResult Logout(ExcursionIndexWebParam param)
+        {
+            base.Session.Abandon();
+
+            ExcursionIndexContext context = new ExcursionIndexContext();
+
+            return base.View(context);
+        }
+
+        [AllowAnonymous, HttpGet, ActionName("howtobook")]
+        public ActionResult HowToBook(ExcursionIndexWebParam param)
+        {
+           
+            ExcursionIndexContext context = new ExcursionIndexContext();
+
+            return base.View(context);
+        }
+
+        [AllowAnonymous, HttpGet, ActionName("howtopay")]
+        public ActionResult HowToPay(ExcursionIndexWebParam param)
+        {
+            
+            ExcursionIndexContext context = new ExcursionIndexContext();
+            
+            return base.View(context);
+        }
+
+
         [HttpPost, ActionName("addcart")]
         public JsonResult AddCart(ExcursionAddWebParam param)
         {

@@ -100,5 +100,18 @@ namespace GuestService.Data
             }
             return result;
         }
+
+
+        public DateTime timelimit
+        {
+            get;
+            set;
+        }
+
+        public string agent
+        {
+            get;
+            set;
+        }
     }
 }

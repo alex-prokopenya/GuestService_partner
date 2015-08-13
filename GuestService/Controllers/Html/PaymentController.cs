@@ -33,6 +33,7 @@
             {
                 throw new ArgumentException("claimid");
             }
+
             PaymentContext context = new PaymentContext {
                 Reservation = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, model.claimId),
                 PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, model.claimId)
@@ -43,13 +44,59 @@
         [HttpGet, ActionName("index")]
         public ActionResult Index(int? claim)
         {
-            PaymentContext model = new PaymentContext();
+            ReservationState state = null;
+
+            if (claim.HasValue)
+                state = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, claim.Value);
+
+
+            #region ПРОВЕРКА ПРАВ ПОЛЬЗОВАТЕЛЯ НА ПРОСМОТР ЗАКАЗА
+            //если есть в параметрах телефон, проверяем его
+            if (!string.IsNullOrEmpty(Request.Params["phone"]))
+            {
+                try
+                {
+                    //проверяем правильность телефона, добавляем в список разрешенных
+                    if (Request.Params["phone"].ToString().Trim() == state.customer.phone.Trim())
+                    {
+
+                        if (System.Web.HttpContext.Current.Session["allowed_claims"] == null)
+                            System.Web.HttpContext.Current.Session["allowed_claims"] = new List<int>();
+
+                        (System.Web.HttpContext.Current.Session["allowed_claims"] as List<int>).Add(claim.Value);
+
+                    }
+                    else
+                        state = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, 0);
+                }
+                catch (Exception)
+                {
+                    state = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, 0);
+                }
+            }
+            else //если нет, проверяем есть ли в сессии разрешение на заявку
+            {
+                try
+                {
+                    if ((claim.HasValue)
+                       && ((System.Web.HttpContext.Current.Session["allowed_claims"] == null)
+                         || (!(System.Web.HttpContext.Current.Session["allowed_claims"] as List<int>).Contains(claim.Value))))
+                        state = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, 0);
+                }
+                catch (NullReferenceException)
+                {
+                    state = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, 0);
+                }
+            }
+            #endregion
+
+            PaymentContext context = new PaymentContext();
             if (claim.HasValue)
             {
-                model.Reservation = BookingProvider.GetReservationState(UrlLanguage.CurrentLanguage, claim.Value);
-                model.PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, claim.Value);
+                context.Reservation = state;
+                context.PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, claim.Value);
             }
-            return base.View(model);
+            return base.View(context);
         }
 
         private static Dictionary<string, string> PayPal_CreateConfig()

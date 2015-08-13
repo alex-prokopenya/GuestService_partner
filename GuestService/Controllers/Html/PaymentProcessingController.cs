@@ -64,6 +64,54 @@
                 return new HttpStatusCodeResult(500);
             }
         }
+
+        [HttpPost, ValidateInput(false)]
+        public ActionResult payu()
+        {
+            string action = base.RouteData.GetRequiredString("action");
+            ActionResult result;
+            try
+            {
+                Tracing.DataTrace.TraceEvent(TraceEventType.Verbose, 0, "UNITELLER payment data: {0}", new object[]
+                {
+                    base.Request.DumpValues()
+                });
+                this.CheckServerAddressList();
+                UnitellerPaymentResult paymentResult = UnitellerPaymentResult.Create(base.Request);
+                if (paymentResult.Status == UnitellerPaymentResult.OpeationStatus.Success)
+                {
+                    ConfirmInvoiceResult invoiceResult = BookingProvider.ConfirmInvoice(paymentResult.InvoiceNumber.Trim());
+                    Tracing.DataTrace.TraceEvent(TraceEventType.Information, 0, "UNITELLER transaction: invoice: '{0}', status: '{1}', invoice confirmation: '{2}'", new object[]
+                    {
+                        paymentResult.InvoiceNumber,
+                        paymentResult.Status,
+                        invoiceResult.IsSuccess ? "SUCCESS" : "FAILED"
+                    });
+                    if (!invoiceResult.IsSuccess)
+                    {
+                        throw new System.Exception(string.Format("invoice confirm error {0}", invoiceResult.ErrorMessage));
+                    }
+                }
+                else
+                {
+                    Tracing.DataTrace.TraceEvent(TraceEventType.Information, 0, "UNITELLER transaction: invoice: '{1}', status: '{2}'", new object[]
+                    {
+                        paymentResult.InvoiceNumber,
+                        paymentResult.Status
+                    });
+                }
+                result = new EmptyResult();
+            }
+            catch (System.Exception ex)
+            {
+                Tracing.DataTrace.TraceEvent(TraceEventType.Error, 0, "UNITELLER payment error: {0}", new object[]
+                {
+                    ex.ToString()
+                });
+                result = new HttpStatusCodeResult(500);
+            }
+            return result;
+        }
     }
 }
 
