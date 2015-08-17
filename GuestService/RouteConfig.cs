@@ -9,6 +9,7 @@
         public static void RegisterRoutes(RouteCollection routes)
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+
             string name = "error";
             string url = "error/{code}";
             object defaults = new {
@@ -17,16 +18,30 @@
                 code = UrlParameter.Optional
             };
             routes.MapRoute(name, url, defaults);
-            name = "language";
-            url = "{language}/{controller}/{action}/{id}";
-            defaults = new {
-                controller = "welcome",
+
+            name = "info";
+            url = "{language}/info/{id}";
+            defaults = new
+            {
+                controller = "info",
                 action = "index",
                 id = UrlParameter.Optional
             };
-            object constraints = new {
-                language = @"\w\w(\-\w\w)?"
+
+            routes.MapRoute(name, url, defaults);
+
+            name = "language";
+            url = "{language}/{controller}/{action}/{id}";
+            defaults = new {
+                   controller = "welcome",
+                   action = "index",
+                   id = UrlParameter.Optional
             };
+
+            object constraints = new {
+                   language = @"\w\w(\-\w\w)?"
+            };
+            
             routes.MapRoute(name, url, defaults, constraints);
             name = "default";
             url = "{controller}/{action}/{id}";

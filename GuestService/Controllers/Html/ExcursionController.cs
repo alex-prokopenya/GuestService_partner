@@ -38,7 +38,6 @@
         [AllowAnonymous, HttpGet, ActionName("howtopay")]
         public ActionResult HowToPay(ExcursionIndexWebParam param)
         {
-            
             ExcursionIndexContext context = new ExcursionIndexContext();
             
             return base.View(context);
