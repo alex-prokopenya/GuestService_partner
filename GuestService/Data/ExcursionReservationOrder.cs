@@ -18,6 +18,18 @@
         public PickupPlace pickuppoint { get; set; }
 
         public ExcursionReservationTime time { get; set; }
+
+        public string included
+        {
+            get;
+            set;
+        }
+
+        public string pickup
+        {
+            get;
+            set;
+        }
     }
 }
 

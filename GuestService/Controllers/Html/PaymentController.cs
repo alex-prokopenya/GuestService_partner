@@ -41,6 +41,11 @@
             return base.View(context);
         }
 
+        private string ClearPhoneFromGarbege(string inp)
+        {
+            return inp.Replace("+", "").Replace("-", "").Replace(" ", "").Replace("(", "").Replace(")", "").Trim();
+        }
+
         [HttpGet, ActionName("index")]
         public ActionResult Index(int? claim)
         {
@@ -57,7 +62,7 @@
                 try
                 {
                     //проверяем правильность телефона, добавляем в список разрешенных
-                    if (Request.Params["phone"].ToString().Trim() == state.customer.phone.Trim())
+                    if (ClearPhoneFromGarbege(Request.Params["phone"]) == ClearPhoneFromGarbege(state.customer.phone))
                     {
 
                         if (System.Web.HttpContext.Current.Session["allowed_claims"] == null)

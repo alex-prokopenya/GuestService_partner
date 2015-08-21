@@ -152,7 +152,7 @@ namespace GuestService.Data
                 result = "Z";
                 return result;
             }
-            public ReservationOrder ReservationOrder(DataRow row)
+            public ReservationOrder ReservationOrder(DataRow row, string language, int? claimId, string orderNote)
             {
                 ReservationOrder result = new ReservationOrder
                 {
@@ -251,7 +251,11 @@ namespace GuestService.Data
                             {
                                 id = row.ReadInt("fromhotelid"),
                                 name = row.ReadNullableTrimmedString("fromhotelname")
-                            }
+                            },
+
+                            included = GetExcursionIncluded(row.ReadInt("excursid"), language),
+
+                            pickup = GetExcursionPickup(row.ReadInt("excursid"), language, claimId, orderNote)
                         };
                     }
                     else
@@ -608,6 +612,82 @@ namespace GuestService.Data
             XElement xml = BookingProvider.BuildBookingClaimXml(partnerId, claim);
             return BookingProvider.BuildBookingProcessResult(language, "save", xml, new int?(partnerPassId));
         }
+
+        private static string GetExcursionIncluded(int id, string lang)
+        {
+            var res = DatabaseOperationProvider.Query("select name, lname from extype where inc in (select extype from exreqserv where excurs = @excID)", "services", new { excID = id });
+
+            var list = new List<string>();
+
+            foreach (DataRow row in res.Tables["services"].Rows)
+                list.Add(row.ReadNullableTrimmedString(lang.ToUpper() == "RU" ? "name" : "lname"));
+
+            return string.Join(", ", list);
+        }
+
+        private static string GetExcursionPickup(int id, string lang, int? claimId, string orderNote)
+        {
+            if (string.IsNullOrEmpty(orderNote))
+                orderNote = "";
+
+            string resultString = "";
+
+            DataSet res = null;
+            if (claimId.HasValue) // получить note заказа
+            {
+                res = DatabaseOperationProvider.Query("select note from claim where inc = @claimID", "services", new { claimID = claimId });
+
+                foreach (DataRow row in res.Tables["services"].Rows)
+                    orderNote = row["note"].ToString();
+            }
+
+            int hotel = 0;
+
+            if (orderNote.Trim() != "")
+            {
+                //по note получить отель
+                res = DatabaseOperationProvider.Query("select pickup_hotel from guestservice_alias where alias = @note", "services", new { note = orderNote });
+
+                foreach (DataRow row in res.Tables["services"].Rows)
+                    hotel = Convert.ToInt32(row["pickup_hotel"]);
+            }
+
+            string name = "lname";
+
+            if (lang == "ru")
+                name = "name";
+
+
+            if (hotel > 0)
+            {
+                res = DatabaseOperationProvider.Query("select a.picktime, b." + name + " as pickup, c." + name + " as hotel from exhoteltime as a, _pickup as b, hotel as c where excurs = @exId and a.hotel=c.inc and a.hotel=@hotelId and a._pickup = b.inc", "services", new { hotelId = hotel, exId = id });
+
+                try
+                {
+                    foreach (DataRow row in res.Tables["services"].Rows)
+                        resultString = row["hotel"] + ", " + row["pickup"] + " " + Convert.ToDateTime(row["picktime"]).ToString("H:mm");
+                }
+                catch (Exception) { }
+            }
+
+            if (resultString == "")
+            {
+                res = DatabaseOperationProvider.Query("select a.picktime, b." + name + " as pickup, c." + name + " as hotel from exhoteltime as a, _pickup as b, hotel as c where excurs = @exId and a.hotel=c.inc and a._pickup = b.inc order by extime", "services", new { exId = id });
+
+                try
+                {
+                    foreach (DataRow row in res.Tables["services"].Rows)
+                    {
+                        resultString = row["hotel"] + ", " + row["pickup"] + " " + Convert.ToDateTime(row["picktime"]).ToString("H:mm");
+                        break;
+                    }
+                }
+                catch (Exception) { }
+            }
+
+            return resultString;
+        }
+
         private static ReservationState BuildBookingProcessResult(string language, string action, XElement xml, int? partnerPassId)
         {
             DataSet ds = DatabaseOperationProvider.QueryProcedure("up_guest_BookingProcess", "state,orders,people,errors", new
@@ -634,7 +714,7 @@ namespace GuestService.Data
                 result.orders = (
                     from DataRow row in ds.Tables["orders"].Rows
                     orderby BookingProvider.factory.ReservationOrderSorting(row)
-                    select BookingProvider.factory.ReservationOrder(row)).ToList<ReservationOrder>();
+                    select BookingProvider.factory.ReservationOrder(row, language, result.claimId, orderNote)).ToList<ReservationOrder>();
                 foreach (ReservationOrder order in result.orders)
                 {
                     if (order.freight != null)
