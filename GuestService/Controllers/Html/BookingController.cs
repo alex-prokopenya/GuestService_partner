@@ -283,7 +283,7 @@
                             CompleteOperationProvider.SetResult(operation.OperationId, null, null);
                         }
                     }, null);
-                   
+                    model.Form = form;
                     return base.View("_BookingProcessing", model);
                 }
             }

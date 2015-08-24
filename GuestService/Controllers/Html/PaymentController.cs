@@ -101,6 +101,15 @@
                 context.Reservation = state;
                 context.PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, claim.Value);
             }
+
+            if (Request.Params["paymentMethod"]!="")
+            {
+               return ProcessingPrivate(new ProcessingModel() {
+                   claimId = claim.Value,
+                   paymentId = Request.Params["paymentMethod"]
+               });
+            }
+
             return base.View(context);
         }
 
@@ -117,6 +126,46 @@
             dictionary.Add("account1.apiPassword", paymentPaypal.Password);
             dictionary.Add("account1.apiSignature", paymentPaypal.Signature);
             return dictionary;
+        }
+
+        private ActionResult ProcessingPrivate(ProcessingModel model)
+        {
+            if (model == null)
+            {
+                throw new System.ArgumentNullException("model");
+            }
+            if (model.claimId == 0)
+            {
+                throw new System.ArgumentException("claimid");
+            }
+            PaymentMode paymentMode = (
+                from m in BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, model.claimId)
+                where m.id == model.paymentId
+                select m).FirstOrDefault<PaymentMode>();
+            if (paymentMode == null)
+            {
+                throw new System.Exception(string.Format("payment mode id '{0}' not found", model.paymentId));
+            }
+            string text = (paymentMode.processing ?? "").ToLowerInvariant();
+
+            if (text != null)
+            {
+                switch (text)
+                {
+                    case "paypal":
+                        return this.Processing_PayPal(model.claimId, paymentMode);
+
+                    case "uniteller":
+                        return this.Processing_Uniteller(model.claimId, paymentMode);
+
+                    case "payu":
+                        return this.Processing_PayU(model.claimId, paymentMode);
+
+                    default:
+                        break;
+                }
+            }
+            throw new System.Exception(string.Format("unsupported processing system '{0}'", paymentMode.processing));
         }
 
         [ValidateAntiForgeryToken, ActionName("processing"), HttpPost]

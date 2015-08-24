@@ -40,6 +40,8 @@
 
         public string RemoveOrderId { get; set; }
 
+        public string PaymentMethod { get; set; }
+
         public bool RulesAccepted { get; set; }
     }
 }

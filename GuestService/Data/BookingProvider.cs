@@ -112,7 +112,8 @@ namespace GuestService.Data
                         canshowprice = row.ReadBoolean("showprice", false),
                         canprintvoucher = row.ReadBoolean("printvoucher", false),
                         canpay = row.ReadBoolean("canpay", false)
-                    }
+                    },
+                    timelimit = GetClaimTimelimit(row.ReadNullableInt("claim_id"))
                 };
             }
             public string ReservationOrderSorting(DataRow row)
@@ -765,6 +766,21 @@ namespace GuestService.Data
             }
 
             return result;
+        }
+
+        private static DateTime GetClaimTimelimit(int? claimId)
+        {
+            if (claimId.HasValue)
+            {
+                var res = DatabaseOperationProvider.Query("select timelimit from [pr_claim_timelimit] where [claim_id] = @claimId", "timelimit", new { claimId = claimId });
+
+                foreach (DataRow row in res.Tables["timelimit"].Rows)
+                    return Convert.ToDateTime(row["timelimit"]);
+
+                return DateTime.MaxValue;
+            }
+            else
+                return DateTime.MaxValue;
         }
 
         private static string GetAgencyName(int claimId)
