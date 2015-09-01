@@ -102,7 +102,7 @@
                 context.PaymentModes = BookingProvider.GetPaymentModes(UrlLanguage.CurrentLanguage, claim.Value);
             }
 
-            if (Request.Params["paymentMethod"]!="")
+            if (!string.IsNullOrEmpty( Request.Params["paymentMethod"] ))
             {
                return ProcessingPrivate(new ProcessingModel() {
                    claimId = claim.Value,
@@ -160,6 +160,9 @@
 
                     case "payu":
                         return this.Processing_PayU(model.claimId, paymentMode);
+
+                    case "bank":
+                        return new RedirectResult(base.Url.Action("howtopay", "info"));
 
                     default:
                         break;

@@ -38,6 +38,11 @@
                 param.sp = new int?(CatalogProvider.GetGeoPointIdByAlias(param.StartPointAlias));
             }
             ExcursionProvider.ExcursionSorting sorting = (!string.IsNullOrEmpty(param.SortOrder)) ? ((ExcursionProvider.ExcursionSorting)System.Enum.Parse(typeof(ExcursionProvider.ExcursionSorting), param.SortOrder)) : ExcursionProvider.ExcursionSorting.name;
+
+            //получить id экскурсий в регионе
+
+            //фильтровать по id
+
             CatalogResult result = new CatalogResult();
             result.excursions = ExcursionProvider.FindExcursions(param.Language, partner.id, param.FirstDate, param.LastDate, param.SearchLimit, param.StartPoint, param.SearchText, param.Categories, param.Departures, (param.Destinations != null && param.Destinations.Length > 0) ? param.Destinations : (param.DestinationState.HasValue ? new int[]
             {
@@ -46,6 +51,7 @@
             System.Collections.Generic.Dictionary<int, ExcursionRank> rankings = SurveyProvider.GetExcursionsRanking((
                 from m in result.excursions
                 select m.excursion.id).ToList<int>(), param.Language);
+
             foreach (CatalogExcursionMinPrice excursion in result.excursions)
             {
                 ExcursionRank rank = null;
@@ -245,8 +251,9 @@
                 TimeSpan? minDuration = null;
                 List<CatalogExcursionMinPrice> catalog = ExcursionProvider.FindExcursions(param.Language, partner.id, startDate, null, null, param.StartPoint, null, null, null, param.DestinationState.HasValue ? new int[] { param.DestinationState.Value } : null, null, minDuration, null, null, param.WithoutPrice);
                 result = new DeparturesResult {
-                    departures = ExcursionProvider.BuildDepartureList(catalog)
+                    departures = ExcursionProvider.BuildRegionList(catalog)
                 };
+
                 HttpContext.Current.Cache.Add(key, result, null, DateTime.Now.AddMinutes(10.0), Cache.NoSlidingExpiration, CacheItemPriority.Normal, null);
             }
             return result;
@@ -375,7 +382,7 @@
                 TimeSpan? minDuration = null;
                 List<CatalogExcursionMinPrice> catalog = ExcursionProvider.FindExcursions(param.Language, partner.id, startDate, null, null, param.StartPoint, null, null, null, param.DestinationState.HasValue ? new int[] { param.DestinationState.Value } : null, null, minDuration, null, null, param.WithoutPrice);
                 result.categorygroups = ExcursionProvider.BuildFilterCategories(catalog, null);
-                result.departures = ExcursionProvider.BuildFilterDepartures(catalog, null);
+            //    result.departures = ExcursionProvider.BuildFilterDepartures(catalog, null);
                 result.destinations = ExcursionProvider.BuildFilterDestinations(catalog, null);
                 result.languages = ExcursionProvider.BuildFilterLanguages(catalog, null);
                 result.durations = ExcursionProvider.BuildFilterDurations(catalog);
@@ -399,7 +406,7 @@
                 result = new FilterDetailsResult();
                 System.Collections.Generic.List<CatalogExcursionMinPrice> excursions = ExcursionProvider.FindExcursions(param.Language, partner.id, null, null, null, param.StartPoint, null, null, null, null, null, null, null, null, param.WithoutPrice);
                 result.categorygroups = ExcursionProvider.BuildFilterCategories(excursions, null);
-                result.departures = ExcursionProvider.BuildFilterDepartures(excursions, null);
+             //   result.departures = ExcursionProvider.BuildFilterDepartures(excursions, null);
                 result.languages = ExcursionProvider.BuildFilterLanguages(excursions, null);
                 result.durations = ExcursionProvider.BuildFilterDurations(excursions);
                 System.Collections.Generic.List<CatalogFilterLocationItem> destinations = ExcursionProvider.BuildFilterDestinations(excursions, null);

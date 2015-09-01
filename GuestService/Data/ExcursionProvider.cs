@@ -69,6 +69,9 @@ namespace GuestService.Data
                     id = row.ReadInt("excurs$inc"),
                     name = row.ReadNullableTrimmedString("excurs$name"),
                     url = row.ReadNullableTrimmedString("excurs$url"),
+
+                    
+
                     excursionPartner = row.IsNull("expartner$inc") ? null : new Partner
                     {
                         id = row.ReadInt("expartner$inc"),
@@ -509,92 +512,110 @@ namespace GuestService.Data
         }
         public static System.Collections.Generic.List<CatalogExcursionMinPrice> FindExcursions(string lang, int partner, System.DateTime? startDate, System.DateTime? endDate, int? topLimit, int? startPoint, string searchText, int[] categories, int[] departures, int[] destinations, int[] languages, System.TimeSpan? minDuration, System.TimeSpan? maxDuration, ExcursionProvider.ExcursionSorting? sorting, bool withoutPrice)
         {
-            System.DateTime _startDate = startDate.HasValue ? startDate.Value : System.DateTime.Now.Date;
-            System.DateTime _endDate = endDate.HasValue ? endDate.Value : _startDate.AddMonths(6);
-            XName arg_261_0 = "excursionFilters";
-            object[] array = new object[8];
-            array[0] = ((!topLimit.HasValue) ? null : new XAttribute("topLimit", topLimit.Value));
-            array[1] = ((searchText == null) ? null : new XElement("name", searchText));
-            object[] arg_D5_0 = array;
-            int arg_D5_1 = 2;
-            XElement arg_D5_2;
-            if (categories != null)
+            try
             {
-                arg_D5_2 = new XElement("categories",
-                    from c in categories
-                    select new XElement("category", c));
-            }
-            else
-            {
-                arg_D5_2 = null;
-            }
-            arg_D5_0[arg_D5_1] = arg_D5_2;
-            object[] arg_115_0 = array;
-            int arg_115_1 = 3;
-            XElement arg_115_2;
-            if (departures != null)
-            {
-                arg_115_2 = new XElement("departurepoints",
-                    from d in departures
-                    select new XElement("departurepoint", d));
-            }
-            else
-            {
-                arg_115_2 = null;
-            }
-            arg_115_0[arg_115_1] = arg_115_2;
-            object[] arg_155_0 = array;
-            int arg_155_1 = 4;
-            XElement arg_155_2;
-            if (destinations != null)
-            {
-                arg_155_2 = new XElement("destinationpoints",
-                    from d in destinations
-                    select new XElement("destinationpoint", d));
-            }
-            else
-            {
-                arg_155_2 = null;
-            }
-            arg_155_0[arg_155_1] = arg_155_2;
-            object[] arg_195_0 = array;
-            int arg_195_1 = 5;
-            XElement arg_195_2;
-            if (languages != null)
-            {
-                arg_195_2 = new XElement("languages",
-                    from l in languages
-                    select new XElement("language", l));
-            }
-            else
-            {
-                arg_195_2 = null;
-            }
-            arg_195_0[arg_195_1] = arg_195_2;
-            array[6] = new XElement("duration", new object[]
-            {
+                System.DateTime _startDate = startDate.HasValue ? startDate.Value : System.DateTime.Now.Date;
+                System.DateTime _endDate = endDate.HasValue ? endDate.Value : _startDate.AddMonths(6);
+                XName arg_261_0 = "excursionFilters";
+                object[] array = new object[8];
+                array[0] = ((!topLimit.HasValue) ? null : new XAttribute("topLimit", topLimit.Value));
+                array[1] = ((searchText == null) ? null : new XElement("name", searchText));
+
+
+                XElement categoriesEl;
+                if (categories != null)
+                {
+                    categoriesEl = new XElement("categories",
+                        from c in categories
+                        select new XElement("category", c));
+                }
+                else
+                    categoriesEl = null;
+
+                array[2] = categoriesEl;
+
+
+                XElement departuresEl;
+                List<int> allowedIds = new List<int>();
+                if (departures != null)
+                {
+                    //делаем фильтр экскурсий по id региона
+                    DataSet set = DatabaseOperationProvider.Query("select  inc from excurs where region = " + departures[0], "regions", new { });
+
+                    foreach (DataRow row in set.Tables["regions"].Rows)
+                        allowedIds.Add(row.ReadInt("inc"));
+                }
+
+                departuresEl = null;
+
+                array[3] = departuresEl;
+
+                XElement destEl;
+
+                if (destinations != null)
+                {
+                    destEl = new XElement("destinationpoints",
+                        from d in destinations
+                        select new XElement("destinationpoint", d));
+                }
+                else
+                    destEl = null;
+
+                array[4] = destEl;
+
+                XElement langEl;
+                if (languages != null)
+                {
+                    langEl = new XElement("languages",
+                        from l in languages
+                        select new XElement("language", l));
+                }
+                else
+                    langEl = null;
+
+                array[5] = langEl;
+
+                array[6] = new XElement("duration", new object[]
+                {
                 (!minDuration.HasValue) ? null : new XAttribute("minDuration", new System.DateTime(1900, 1, 1).Add(minDuration.Value)),
                 (!maxDuration.HasValue) ? null : new XAttribute("maxDuration", new System.DateTime(1900, 1, 1).Add(maxDuration.Value))
-            });
-            array[7] = ((!sorting.HasValue) ? null : new XElement("sorting", sorting.ToString()));
-            XElement xml = new XElement(arg_261_0, array);
-            DataSet ds = DatabaseOperationProvider.QueryProcedure("up_guest_findExcursions", "excursions", new
-            {
-                language = lang,
-                partner = partner,
-                startpoint = startPoint,
-                startdate = _startDate,
-                enddate = _endDate,
-                filters = xml,
-                withpriceonly = !withoutPrice
-            });
-            return (
-                from DataRow row in ds.Tables["excursions"].Rows
-                select new CatalogExcursionMinPrice
+                });
+                array[7] = ((!sorting.HasValue) ? null : new XElement("sorting", sorting.ToString()));
+                XElement xml = new XElement(arg_261_0, array);
+                DataSet ds = DatabaseOperationProvider.QueryProcedure("up_guest_findExcursions", "excursions", new
                 {
-                    excursion = ExcursionProvider.factory.CatalogExcursion(row),
-                    minPrice = ExcursionProvider.factory.CatalogExcursionMinPrice(row)
-                }).ToList<CatalogExcursionMinPrice>();
+                    language = lang,
+                    partner = partner,
+                    startpoint = startPoint,
+                    startdate = _startDate,
+                    enddate = _endDate,
+                    filters = xml,
+                    withpriceonly = !withoutPrice
+                });
+
+                if (allowedIds.Count > 0)
+                    return (
+                         from DataRow row in ds.Tables["excursions"].Rows
+                         where allowedIds.Contains(row.ReadInt("excurs$inc")) //> 0 
+                         select new CatalogExcursionMinPrice
+                         {
+                             excursion = ExcursionProvider.factory.CatalogExcursion(row),
+                             minPrice = ExcursionProvider.factory.CatalogExcursionMinPrice(row)
+                         }).ToList<CatalogExcursionMinPrice>();
+                else
+                    return (
+                        from DataRow row in ds.Tables["excursions"].Rows
+                        select new CatalogExcursionMinPrice
+                        {
+                            excursion = ExcursionProvider.factory.CatalogExcursion(row),
+                            minPrice = ExcursionProvider.factory.CatalogExcursionMinPrice(row)
+                        }).ToList<CatalogExcursionMinPrice>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return null;
         }
         public static Image GetCatalogImage(int id, int index)
         {
@@ -787,6 +808,48 @@ namespace GuestService.Data
                 orderby m.name
                 select m).ToList<CatalogFilterLocationItem>();
         }
+
+        public static System.Collections.Generic.List<GeoArea> BuildRegionList(System.Collections.Generic.List<CatalogExcursionMinPrice> catalog)
+        {
+            List<int> keys = new List<int>();
+            if (catalog != null)
+            {
+                foreach (CatalogExcursionMinPrice item in catalog)
+                {
+                    if (item.excursion != null )
+                        keys.Add(item.excursion.id);
+                }
+            }
+
+            var excKeys = String.Join(",", keys);
+
+            var geoData = new List<GeoArea>();
+            try
+            {
+                DataSet ds = DatabaseOperationProvider.Query("select name, lname, inc from region where inc in (select region from excurs where inc in ("+excKeys+"))", "regions", new
+                {
+                });
+
+                foreach (DataRow row in ds.Tables["regions"].Rows)
+                {
+                    geoData.Add(new GeoArea()
+                    {
+                        name = row.ReadNullableTrimmedString("lname"),
+
+                        alias = row.ReadNullableTrimmedString("name"),
+
+                        id = row.ReadInt("inc")
+                    });
+                }
+
+                return geoData;
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex.Message);
+            }
+            return null;
+        }
+
         public static System.Collections.Generic.List<GeoArea> BuildDepartureList(System.Collections.Generic.List<CatalogExcursionMinPrice> catalog)
         {
             System.Collections.Generic.Dictionary<int, GeoArea> departures = new System.Collections.Generic.Dictionary<int, GeoArea>();
@@ -811,6 +874,7 @@ namespace GuestService.Data
                 from m in departures.Values
                 orderby m.name
                 select m).ToList<GeoArea>();
+
         }
         public static System.Collections.Generic.List<CatalogFilterLocationItem> BuildFilterDestinations(System.Collections.Generic.List<CatalogExcursionMinPrice> catalog, int[] marks)
         {
