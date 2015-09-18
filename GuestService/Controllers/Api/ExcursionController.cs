@@ -386,7 +386,6 @@
                 TimeSpan? minDuration = null;
                 List<CatalogExcursionMinPrice> catalog = ExcursionProvider.FindExcursions(param.Language, partner.id, startDate, null, null, param.StartPoint, null, null, null, param.DestinationState.HasValue ? new int[] { param.DestinationState.Value } : null, null, minDuration, null, null, param.WithoutPrice);
                 result.categorygroups = ExcursionProvider.BuildFilterCategories(catalog, null);
-            //    result.departures = ExcursionProvider.BuildFilterDepartures(catalog, null);
                 result.destinations = ExcursionProvider.BuildFilterDestinations(catalog, null);
                 result.languages = ExcursionProvider.BuildFilterLanguages(catalog, null);
                 result.durations = ExcursionProvider.BuildFilterDurations(catalog);

@@ -155,6 +155,14 @@
             return base.View(model);
         }
 
+        private int GetDepartByName(string slug)
+        {
+            var regionId = CountriesController.GetRegionBySlug(slug);
+
+            return  regionId.HasValue ? regionId.Value: 0;
+        }
+             
+
         public ActionResult Index(ExcursionIndexWebParam param)
         {
             if ((param != null) && (param.visualtheme != null))
@@ -168,7 +176,6 @@
                 model.PartnerAlias = (param.PartnerAlias != null) ? param.PartnerAlias : Settings.ExcursionDefaultPartnerAlias;
                 if (string.IsNullOrEmpty(model.PartnerAlias))
                     throw new ArgumentException("partner alias is not specified");
-
             }
             model.StartPointAlias = param.StartPointAlias;
             model.ExcursionDate = DateTime.Today.Date.AddDays((double) Settings.ExcursionDefaultDate);
@@ -176,9 +183,15 @@
 
             if (!string.IsNullOrEmpty(param.region))
             {
+                var regionId = GetDepartByName(param.region);
+
+                if (regionId == 0) return RedirectPermanent("/error/404");
+
                 param.sc = "search";
-                param.d = new int[] { 5 };
+                param.d = new int[] { GetDepartByName(param.region) };
                 param.s = "";
+
+                model.Title = "Excursions in " + param.region;
             }
 
             if (param.ShowCommand != null)

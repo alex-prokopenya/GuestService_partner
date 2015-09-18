@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    public class ExcursionIndexContext
+    public class ExcursionIndexContext: SeoObject
     {
         public DateTime ExcursionDate { get; set; }
 
@@ -16,6 +16,7 @@
         public string PartnerSessionId { get; set; }
 
         public string StartPointAlias { get; set; }
+        
     }
 }
 
