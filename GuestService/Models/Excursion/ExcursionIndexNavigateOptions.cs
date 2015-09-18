@@ -11,6 +11,8 @@
 
         public int[] destinations { get; set; }
 
+        public int[] departures { get; set; }
+
         public int? excursion { get; set; }
 
         public int[] languages { get; set; }

@@ -105,9 +105,13 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="GuestService\Code\Payment\PayUPaymentResult.cs" />
+    <Compile Include="GuestService\Controllers\Html\CountriesController.cs" />
     <Compile Include="GuestService\Controllers\Html\InfoController.cs" />
     <Compile Include="GuestService\Data\GuideProvider.cs" />
     <Compile Include="GuestService\Data\ReservationCustomer.cs" />
+    <Compile Include="GuestService\Models\Countries\CountriesCatalog.cs" />
+    <Compile Include="GuestService\Models\Countries\CountryRegions.cs" />
+    <Compile Include="GuestService\Models\SeoObject.cs" />
     <Compile Include="GuestService\Notifications\EmailMessage.cs" />
     <Compile Include="GuestService\Notifications\SimpleEmailService.cs" />
     <Compile Include="GuestService\Notifications\SmsService.cs" />

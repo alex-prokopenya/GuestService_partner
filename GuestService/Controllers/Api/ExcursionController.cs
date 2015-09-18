@@ -32,6 +32,10 @@
             {
                 throw new System.ArgumentNullException("param");
             }
+
+            if (param.dp != null)
+                param.d = null;
+
             WebPartner partner = UserToolsProvider.GetPartner(param);
             if (!param.StartPoint.HasValue && param.StartPointAlias != null)
             {

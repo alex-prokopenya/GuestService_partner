@@ -540,7 +540,7 @@ namespace GuestService.Data
                 if (departures != null)
                 {
                     //делаем фильтр экскурсий по id региона
-                    DataSet set = DatabaseOperationProvider.Query("select  inc from excurs where region = " + departures[0], "regions", new { });
+                    DataSet set = DatabaseOperationProvider.Query("select inc from excurs where region = " + departures[0], "regions", new { });
 
                     foreach (DataRow row in set.Tables["regions"].Rows)
                         allowedIds.Add(row.ReadInt("inc"));

@@ -171,6 +171,7 @@ namespace GuestService.Data
             System.Collections.Generic.List<GuestClaim> result = (
                 from DataRow m in ds.Tables["claims"].Rows
                 select GuestProvider.factory.GuestClaim(m)).ToList<GuestClaim>();
+
             foreach (GuestClaim claim in result)
             {
                 claim.orders = (
@@ -178,6 +179,7 @@ namespace GuestService.Data
                     where m.ReadInt("order$claim") == claim.claim
                     select GuestProvider.factory.GuestOrder(m)).ToList<GuestOrder>();
             }
+
             return result;
         }
         public static System.Collections.Generic.List<GuestClaim> FindGuestClaims(string lang, int userId, string name, int? claim, string passport)

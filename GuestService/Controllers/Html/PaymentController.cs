@@ -161,7 +161,7 @@
                     case "payu":
                         return this.Processing_PayU(model.claimId, paymentMode);
 
-                    case "bank":
+                    case "cash":
                         return new RedirectResult(base.Url.Action("howtopay", "info"));
 
                     default:

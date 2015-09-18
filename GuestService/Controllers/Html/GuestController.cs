@@ -220,8 +220,6 @@
         public ActionResult Order(int? id)
         {
 
-
-
             OrderContext model = new OrderContext();
             int currentUserId = WebSecurity.CurrentUserId;
             List<GuestClaim> linkedClaims = GuestProvider.GetLinkedClaims(UrlLanguage.CurrentLanguage, currentUserId);

@@ -114,7 +114,8 @@
             return base.RedirectToAction("index");
         }
 
-        public ActionResult Index(ExcursionIndexWebParam param)
+        [AllowAnonymous, HttpGet, ActionName("details")]
+        public ActionResult Details(ExcursionIndexWebParam param, int? id)
         {
             if ((param != null) && (param.visualtheme != null))
             {
@@ -132,8 +133,54 @@
                 }
             }
             model.StartPointAlias = param.StartPointAlias;
+            model.ExcursionDate = DateTime.Today.Date.AddDays((double)Settings.ExcursionDefaultDate);
+            model.ExternalCartId = param.ExternalCartId;
+
+            model.NavigateState = new ExcursionIndexNavigateCommand();
+            param.sc = "description";
+            param.ex = id;
+            param.dt = DateTime.Today.AddDays(2);
+
+            // if ((param.ShowCommand.ToLower() == "description") && param.Excursion.HasValue)
+            {
+                    model.NavigateState.Cmd = "description";
+                    ExcursionIndexNavigateOptions options2 = new ExcursionIndexNavigateOptions
+                    {
+                        excursion = param.Excursion,
+                        date = param.Date
+                    };
+                    model.NavigateState.Options = options2;
+            }
+
+            return base.View(model);
+        }
+
+        public ActionResult Index(ExcursionIndexWebParam param)
+        {
+            if ((param != null) && (param.visualtheme != null))
+                new VisualThemeManager(this).SafeSetThemeName(param.visualtheme);
+
+            ExcursionIndexContext model = new ExcursionIndexContext();
+            PartnerSessionManager.CheckPartnerSession(this, param);
+            model.PartnerSessionId = param.PartnerSessionID;
+            if (model.PartnerSessionId == null)
+            {
+                model.PartnerAlias = (param.PartnerAlias != null) ? param.PartnerAlias : Settings.ExcursionDefaultPartnerAlias;
+                if (string.IsNullOrEmpty(model.PartnerAlias))
+                    throw new ArgumentException("partner alias is not specified");
+
+            }
+            model.StartPointAlias = param.StartPointAlias;
             model.ExcursionDate = DateTime.Today.Date.AddDays((double) Settings.ExcursionDefaultDate);
             model.ExternalCartId = param.ExternalCartId;
+
+            if (!string.IsNullOrEmpty(param.region))
+            {
+                param.sc = "search";
+                param.d = new int[] { 5 };
+                param.s = "";
+            }
+
             if (param.ShowCommand != null)
             {
                 model.NavigateState = new ExcursionIndexNavigateCommand();
@@ -146,6 +193,7 @@
                             text = param.SearchText,
                             categories = param.Categories,
                             destinations = param.Destinations,
+                            departures = param.Destinations,
                             languages = param.ExcursionLanguages
                         };
                         model.NavigateState.Options = options;
@@ -161,6 +209,17 @@
                     model.NavigateState.Options = options2;
                 }
             }
+            if (param.Excursion.HasValue)
+            {
+                model.NavigateState.Cmd = "description";
+                ExcursionIndexNavigateOptions options2 = new ExcursionIndexNavigateOptions
+                {
+                    excursion = param.Excursion,
+                    date = param.Date
+                };
+                model.NavigateState.Options = options2;
+            }
+
             return base.View(model);
         }
     }

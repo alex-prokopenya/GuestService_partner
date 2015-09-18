@@ -16,6 +16,8 @@
             }
         }
 
+        public string region { get; set; }
+
         public string cid { get; set; }
 
         public int[] d { get; set; }
@@ -46,6 +48,8 @@
             {
                 return this.ex;
             }
+
+           
         }
 
         public int[] ExcursionLanguages
@@ -104,6 +108,8 @@
             {
                 return this.sc;
             }
+
+          
         }
 
         public string spa { get; set; }
