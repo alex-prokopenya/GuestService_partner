@@ -43,7 +43,6 @@
             return base.View(context);
         }
 
-
         [HttpPost, ActionName("addcart")]
         public JsonResult AddCart(ExcursionAddWebParam param)
         {
@@ -132,6 +131,7 @@
                     throw new ArgumentException("partner alias is not specified");
                 }
             }
+
             model.StartPointAlias = param.StartPointAlias;
             model.ExcursionDate = DateTime.Today.Date.AddDays((double)Settings.ExcursionDefaultDate);
             model.ExternalCartId = param.ExternalCartId;
@@ -141,16 +141,19 @@
             param.ex = id;
             param.dt = DateTime.Today.AddDays(2);
 
-            // if ((param.ShowCommand.ToLower() == "description") && param.Excursion.HasValue)
+            var seoObject = Data.SeoObjectProvider.GetSeoObject(id.Value, "excursion", UrlLanguage.CurrentLanguage);
+            model.Description = seoObject.Description;
+            model.Keywords = seoObject.Keywords;
+            model.Title = seoObject.Title;
+            model.SeoText = seoObject.SeoText;
+
+            model.NavigateState.Cmd = "description";
+            ExcursionIndexNavigateOptions options2 = new ExcursionIndexNavigateOptions
             {
-                    model.NavigateState.Cmd = "description";
-                    ExcursionIndexNavigateOptions options2 = new ExcursionIndexNavigateOptions
-                    {
-                        excursion = param.Excursion,
-                        date = param.Date
-                    };
-                    model.NavigateState.Options = options2;
-            }
+                  excursion = param.Excursion,
+                  date = param.Date
+            };
+            model.NavigateState.Options = options2;
 
             return base.View(model);
         }
@@ -161,7 +164,6 @@
 
             return  regionId.HasValue ? regionId.Value: 0;
         }
-             
 
         public ActionResult Index(ExcursionIndexWebParam param)
         {
@@ -191,7 +193,12 @@
                 param.d = new int[] { GetDepartByName(param.region) };
                 param.s = "";
 
-                model.Title = "Excursions in " + param.region;
+                var seoObject = SeoObjectProvider.GetSeoObject(regionId, "region", UrlLanguage.CurrentLanguage);
+                
+                model.Title = seoObject.Title;
+                model.SeoText = seoObject.SeoText;
+                model.Keywords = seoObject.Keywords;
+                model.Description = seoObject.Description;
             }
 
             if (param.ShowCommand != null)

@@ -3,6 +3,7 @@
     using GuestService;
     using GuestService.Code;
     using GuestService.Models.Countries;
+    using GuestService.Data;
     using Sm.System.Mvc;
     using Sm.System.Mvc.Language;
     using System;
@@ -10,6 +11,7 @@
     using System.Collections.Generic;
     using Sm.System.Database;
     using System.Data;
+
 
     [HttpPreferences, WebSecurityInitializer, UrlLanguage]
     public class CountriesController : BaseController
@@ -82,12 +84,8 @@
         }
 
         //список регионов, по стране
-        private KeyValuePair<string, string>[] GetCountryRegions(string slug)
+        private KeyValuePair<string, string>[] GetCountryRegions(int countryID)
         {
-            int? countryID = GetCountryBySlug(slug);
-
-            if (countryID.HasValue)
-            {
                 var selectQuery = "select name, lname, inc from region where inc in (select region from excurs) AND state = "  + countryID;
                 //текущий язык
                 DataSet set = DatabaseOperationProvider.Query(selectQuery, "regions", new { });
@@ -105,9 +103,6 @@
                 }
 
                 return regions.ToArray();
-            }
-
-            return null;
         }
 
         //список стран
@@ -129,17 +124,28 @@
             }
             else
             {
-                var model = new CountryRegions() {
-                    CountryName = country,
-                    CountryId = country,
-                    Description = "Каталог стран проекта ExGo " + country,
-                    Title = "Каталог стран " + country,
-                    Keywords = "Каталог, купить экскурсию, " + country,
-                    SeoText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    Regions = GetCountryRegions(country)
-                };
+                var lang = UrlLanguage.CurrentLanguage;
+                var countryId = GetCountryBySlug(country);
 
-                return base.View("country", model);
+                if (countryId.HasValue)
+                {
+                    var seoFields = SeoObjectProvider.GetSeoObject(countryId.Value, "country", lang);
+
+                    var model = new CountryRegions()
+                    {
+                        CountryName = country,
+                        CountryId = country,
+                        Description = seoFields.Description,
+                        Title = seoFields.Title,
+                        Keywords = seoFields.Keywords,
+                        SeoText = seoFields.SeoText,
+                        Regions = GetCountryRegions(countryId.Value)
+                    };
+
+                    return base.View("country", model);
+                }
+                else
+                    return RedirectPermanent("/error/404");
             }
         }
     }

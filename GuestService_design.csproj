@@ -110,6 +110,7 @@
     <Compile Include="GuestService\Controllers\Html\InfoController.cs" />
     <Compile Include="GuestService\Data\GuideProvider.cs" />
     <Compile Include="GuestService\Data\ReservationCustomer.cs" />
+    <Compile Include="GuestService\Data\SeoObjectProvider.cs" />
     <Compile Include="GuestService\Models\Countries\CountriesCatalog.cs" />
     <Compile Include="GuestService\Models\Countries\CountryRegions.cs" />
     <Compile Include="GuestService\Models\SeoObject.cs" />
