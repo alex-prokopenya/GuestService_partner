@@ -19,16 +19,6 @@
             };
             routes.MapRoute(name, url, defaults);
 
-            name = "excursions";
-            url = "{language}/excursion/{region}";
-            defaults = new
-            {
-                controller = "excursion",
-                action = "index",
-                region = UrlParameter.Optional
-            };
-            routes.MapRoute(name, url, defaults);
-
             name = "countries";
             url = "{language}/countries/{country}";
             defaults = new
@@ -69,6 +59,16 @@
                 controller = "welcome",
                 action = "index",
                 id = UrlParameter.Optional
+            };
+            routes.MapRoute(name, url, defaults);
+
+            name = "excursions";
+            url = "{language}/excursion/{region}";
+            defaults = new
+            {
+                controller = "excursion",
+                action = "index",
+                region = UrlParameter.Optional
             };
             routes.MapRoute(name, url, defaults);
         }
