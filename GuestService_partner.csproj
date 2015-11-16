@@ -109,6 +109,8 @@
     <Compile Include="GuestService\Controllers\Html\CountriesController.cs" />
     <Compile Include="GuestService\Controllers\Html\InfoController.cs" />
     <Compile Include="GuestService\Data\GuideProvider.cs" />
+    <Compile Include="GuestService\Data\PartnerContent.cs" />
+    <Compile Include="GuestService\Data\PartnerContentProvicer.cs" />
     <Compile Include="GuestService\Data\ReservationCustomer.cs" />
     <Compile Include="GuestService\Data\SeoObjectProvider.cs" />
     <Compile Include="GuestService\Models\Countries\CountriesCatalog.cs" />

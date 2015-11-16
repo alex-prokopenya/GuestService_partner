@@ -69,9 +69,7 @@ namespace GuestService.Data
                     id = row.ReadInt("excurs$inc"),
                     name = row.ReadNullableTrimmedString("excurs$name"),
                     url = row.ReadNullableTrimmedString("excurs$url"),
-
                     
-
                     excursionPartner = row.IsNull("expartner$inc") ? null : new Partner
                     {
                         id = row.ReadInt("expartner$inc"),
