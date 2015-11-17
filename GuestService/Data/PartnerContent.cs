@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GuestService.Data
 {
-    class PartnerContent
+    public class PartnerContent
     {
         private int userId = 0;
 
